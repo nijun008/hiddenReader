@@ -1,0 +1,22 @@
+{
+  "name": "hiddenreader",
+  "version": "0.1.0",
+  "description": "A reader hidden in another window",
+  "main": "./src/main.js",
+  "scripts": {
+    "start": "electron ./src/main.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "txt Reader",
+    "windows Reader",
+    "electron"
+  ],
+  "author": "NiJun",
+  "license": "ISC",
+  "dependencies": {
+    "electron": "^9.1.0",
+    "iconv-lite": "^0.6.2",
+    "jschardet": "^2.2.1"
+  }
+}
