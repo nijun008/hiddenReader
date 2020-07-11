@@ -14,7 +14,7 @@ function createWindow () {
     }
   })
 
-  win.loadFile('./views/index.html')
+  win.loadFile('./views/index/index.html')
 
   win.once('ready-to-show', () => {
     win.show()
