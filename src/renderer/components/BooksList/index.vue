@@ -6,13 +6,12 @@
         <div class="book"
           v-for="(book, index) in books" 
           :key="'book-' + index" 
-          @mouseenter="() => toggleRemove(book, index, true)"
-          @mouseleave="() => toggleRemove(book, index, false)">
+          @mouseenter="() => bookHoverHandle(book, true)"
+          @mouseleave="() => bookHoverHandle(book, false)">
           <div class="book-title">{{ book.name }}</div>
           <div class="progress">{{ book.progress*100 + '%' }}</div>
-          <div v-show="book.showRemove" class="remove-button" @click.stop="removeBook(book, index)">-</div>
+          <div v-show="book === hoverBook" class="remove-button" @click.stop="removeBook(book, index)">-</div>
         </div>
-
         <div class="book" @click="openFileHandle">
           <div class="add">+</div>
         </div>
@@ -26,8 +25,9 @@
 const { remote } = require('electron')
 const path = require('path')
 
-// let exePath = path.dirname(remote.app.getPath('exe'))
-let execPath = path.dirname(remote.process.execPath)
+let cachePath = path.dirname(remote.app.getPath('cache'))
+console.log(cachePath)
+// let execPath = path.dirname(remote.process.execPath)
 
 const { dialog } = remote
 const fs = require('fs')
@@ -35,10 +35,6 @@ const jschardet = require('jschardet')
 const iconv = require('iconv-lite')
 
 const Nedb = require('nedb')
-const booksdb = new Nedb({
-  filename: execPath + '/appData/books.db',
-  autoload: true
-})
 
 let chaperRegStr = '第[0-9一二三四五六七八九十百千万]+'
 let allUnits = '[章卷节回幕计]'
@@ -46,28 +42,43 @@ let allUnits = '[章卷节回幕计]'
 export default {
   data () {
     return {
-      books: []
+      books: [],
+      hoverBook: {}
     }
   },
-  mounted () {
-    booksdb.find({}, (err, books) => {
-      if (!err) {
-        this.books = books
-      } else {
-        console.log('查询本地数据出错：', err)
-      }
-    })
+  created () {
+    this.dbInit()
   },
   methods: {
-    toggleRemove (book, index, val) {
-      let change = book
-      change.showRemove = val
-      this.$set(this.books, index, change)
+    dbInit () {
+      this.booksdb = new Nedb({
+        filename: cachePath + '/hiddenReader/books.db',
+        autoload: true,
+        onload: (err) => {
+          if (err) {
+            alert('数据库加载出错!')
+          } else {
+            this.getBookList()
+          }
+        }
+      })
+    },
+    getBookList () {
+      this.booksdb.find({}, (err, books) => {
+        if (!err) {
+          this.books = books
+        } else {
+          console.log('查询本地数据出错：', err)
+        }
+      })
+    },
+    bookHoverHandle (book, val) {
+      this.hoverBook = val ? book : {}
     },
     removeBook (book, index) {
       let flag = confirm('是否要删除书籍？')
       if (flag) {
-        booksdb.remove({ _id: book._id }, {}, (err, numRemoved) => {
+        this.booksdb.remove({ _id: book._id }, {}, (err, numRemoved) => {
           if (err) {
             console.log('数据删除失败：', err)
           } else {
@@ -78,7 +89,7 @@ export default {
       }
     },
     openFileHandle () {
-      let files = dialog.showOpenDialog({
+      let files = dialog.showOpenDialogSync({
         filters: [
           { name: '文本文档', extensions: ['txt'] },
           { name: '所有文件', extensions: ['*'] }
@@ -128,7 +139,7 @@ export default {
         console.log(book)
         console.log('用时：' + ((new Date().getTime() - start) / 1000) + '秒')
 
-        booksdb.insert(book, (err, book) => {
+        this.booksdb.insert(book, (err, book) => {
           if (err) {
             console.log('添加书籍出错：', err)
           } else {
@@ -136,7 +147,6 @@ export default {
             this.books.push(book)
           }
         })
-        console.log('程序路径：' + execPath)
       }
     },
     chaperSplit (title, content, level, parent) {
