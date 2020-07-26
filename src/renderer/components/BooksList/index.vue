@@ -15,6 +15,7 @@
         <div class="book" @click="openFileHandle">
           <div class="add">+</div>
         </div>
+        
       </div>
     </div>
   </div>
@@ -26,8 +27,6 @@ const { remote } = require('electron')
 const path = require('path')
 
 let cachePath = path.dirname(remote.app.getPath('cache'))
-console.log(cachePath)
-// let execPath = path.dirname(remote.process.execPath)
 
 const { dialog } = remote
 const fs = require('fs')
@@ -47,7 +46,8 @@ export default {
     }
   },
   created () {
-    this.dbInit()
+    console.log(this.$store.state.Book.booksList)
+    // this.dbInit()
   },
   methods: {
     dbInit () {

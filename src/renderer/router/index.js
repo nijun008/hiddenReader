@@ -7,13 +7,25 @@ export default new Router({
   routes: [
     {
       path: '/',
-      name: 'landing-page',
-      component: require('@/components/LandingPage').default
-    },
-    {
-      path: '/bookslist',
-      name: 'bookslist',
-      component: require('@/components/BooksList').default
+      name: 'layout',
+      component: require('@/components/Layout').default,
+      children: [
+        {
+          path: '/home',
+          name: 'home',
+          component: require('@/components/Home').default
+        },
+        {
+          path: '/bookslist',
+          name: 'bookslist',
+          component: require('@/components/BooksList').default
+        },
+        {
+          path: '/book',
+          name: 'book',
+          component: require('@/components/Book').default
+        }
+      ]
     },
     {
       path: '*',

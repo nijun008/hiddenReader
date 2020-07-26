@@ -1,11 +1,14 @@
+const Nedb = require('nedb')
+
 const { remote } = require('electron')
+
 const path = require('path')
 
 let cachePath = path.dirname(remote.app.getPath('cache'))
 
 class Db {
   constructor (database) {
-    this.db = new Datastore({
+    this.db = new Nedb({
       filename: database,
       autoload: true
     })
@@ -18,6 +21,7 @@ class Db {
           console.log('查询数据库出错！', err)
           reject(err)
         } else {
+          console.log('查询结果:', result)
           resolve(result)
         }
       })
@@ -38,13 +42,13 @@ class Db {
   }
 
   remove (query) {
-    return new Promise((resolv, reject) => {
+    return new Promise((resolve, reject) => {
       this.db.remove(query, {}, (err, numRemoved) => {
         if (err) {
           console.log('数据删除出错', err)
-          resolv(err)
+          resolve(err)
         } else {
-          resolve(numRemoved)
+          reject(numRemoved)
         }
       })
     })
