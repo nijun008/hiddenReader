@@ -10,7 +10,7 @@
           @mouseleave="() => bookHoverHandle(book, false)">
           <div class="book-title">{{ book.name }}</div>
           <div class="progress">{{ book.progress*100 + '%' }}</div>
-          <div v-show="book === hoverBook" class="remove-button" @click.stop="removeBook(book, index)">-</div>
+          <div v-show="book === hoverBook" class="remove-button" @click.stop="removeBookHandle(book, index)">-</div>
         </div>
         <div class="book" @click="openFileHandle">
           <div class="add">+</div>
@@ -23,6 +23,7 @@
 
 <script>
 // If not already defined...
+import { mapActions } from 'vuex'
 const { remote } = require('electron')
 const path = require('path')
 
@@ -41,15 +42,19 @@ let allUnits = '[章卷节回幕计]'
 export default {
   data () {
     return {
-      books: [],
       hoverBook: {}
     }
   },
-  created () {
-    console.log(this.$store.state.Book.booksList)
-    // this.dbInit()
+  computed: {
+    books () {
+      return this.$store.state.Book.booksList
+    }
   },
   methods: {
+    ...mapActions({
+      removeBook: 'removeBook',
+      addBook: 'addBook'
+    }),
     dbInit () {
       this.booksdb = new Nedb({
         filename: cachePath + '/hiddenReader/books.db',
@@ -75,16 +80,22 @@ export default {
     bookHoverHandle (book, val) {
       this.hoverBook = val ? book : {}
     },
-    removeBook (book, index) {
+    removeBookHandle (book, index) {
       let flag = confirm('是否要删除书籍？')
       if (flag) {
-        this.booksdb.remove({ _id: book._id }, {}, (err, numRemoved) => {
-          if (err) {
-            console.log('数据删除失败：', err)
-          } else {
-            console.log('删除数据成功，删除数量：' + numRemoved)
-            this.books.splice(index, 1)
-          }
+        // this.booksdb.remove({ _id: book._id }, {}, (err, numRemoved) => {
+        //   if (err) {
+        //     console.log('数据删除失败：', err)
+        //   } else {
+        //     console.log('删除数据成功，删除数量：' + numRemoved)
+        //     this.books.splice(index, 1)
+        //   }
+        // })
+        // console.log(this.removeBook)
+        this.removeBook(book, index).then(() => {
+          console.log('成功')
+        }).catch(err => {
+          console.log(err)
         })
       }
     },
@@ -97,7 +108,7 @@ export default {
         properties: ['openFile']
       })
 
-      let start = new Date().getTime()
+      console.time('bookHandle')
 
       if (files && files[0]) {
         let filePath = files[0]
@@ -137,16 +148,9 @@ export default {
         txtData && (book.chapers = this.chaperSplitUntree(txtData, book.name))
 
         console.log(book)
-        console.log('用时：' + ((new Date().getTime() - start) / 1000) + '秒')
+        console.timeEnd('bookHandle')
 
-        this.booksdb.insert(book, (err, book) => {
-          if (err) {
-            console.log('添加书籍出错：', err)
-          } else {
-            console.log(book)
-            this.books.push(book)
-          }
-        })
+        this.addBook(book)
       }
     },
     chaperSplit (title, content, level, parent) {

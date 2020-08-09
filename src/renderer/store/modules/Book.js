@@ -12,8 +12,8 @@ const mutations = {
   ADD_BOOK (state, book) {
     state.booksList.push(book)
   },
-  REMOVE_BOOK (state, bookIndex) {
-    state.booksList.splice(bookIndex, 1)
+  REMOVE_BOOK (state, target) {
+    state.booksList = state.booksList.filter(book => book._id !== target._id)
   },
   UPDATE_BOOK (state, bookIndex, book) {
     Vue.$set(state.booksList, bookIndex, book)
@@ -22,17 +22,29 @@ const mutations = {
 
 const actions = {
   initBook ({ commit }) {
-    console.log('分发actions')
     bookdb.find({}).then(booksList => {
-      console.log('find结果:', booksList)
       commit('SET_BOOK', booksList)
     })
   },
   addBook ({ commit }, book) {
-    commit('ADD_BOOK', book)
+    return new Promise((resolve, reject) => {
+      bookdb.insert(book).then(newBook => {
+        commit('ADD_BOOK', newBook)
+        resolve(newBook)
+      }).catch(err => {
+        reject(err)
+      })
+    })
   },
-  removeBook ({ commit }, bookIndex) {
-    commit('REMOVE_BOOK', bookIndex)
+  removeBook ({ commit }, book, bookIndex) {
+    return new Promise((resolve, reject) => {
+      bookdb.remove({_id: book._id}).then((removeNum) => {
+        commit('REMOVE_BOOK', book)
+        resolve(removeNum)
+      }).catch(err => {
+        reject(err)
+      })
+    })
   },
   updateBook ({ commit }, bookIndex, book) {
     commit('UPDATE_BOOK', bookIndex, book)

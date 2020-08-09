@@ -46,9 +46,9 @@ class Db {
       this.db.remove(query, {}, (err, numRemoved) => {
         if (err) {
           console.log('数据删除出错', err)
-          resolve(err)
+          reject(err)
         } else {
-          reject(numRemoved)
+          resolve(numRemoved)
         }
       })
     })
