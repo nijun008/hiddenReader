@@ -40,6 +40,11 @@ export default {
 }
 </script>
 
-<style>
-
+<style scoped>
+.layout-wrap {
+  height: 100%;
+}
+.layout-main {
+  height: 100%;
+}
 </style>

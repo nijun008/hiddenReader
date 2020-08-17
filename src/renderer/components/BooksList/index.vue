@@ -7,7 +7,8 @@
           v-for="(book, index) in books" 
           :key="'book-' + index" 
           @mouseenter="() => bookHoverHandle(book, true)"
-          @mouseleave="() => bookHoverHandle(book, false)">
+          @mouseleave="() => bookHoverHandle(book, false)"
+          @click="bookClickHandle(book)">
           <div class="book-title">{{ book.name }}</div>
           <div class="progress">{{ book.progress*100 + '%' }}</div>
           <div v-show="book === hoverBook" class="remove-button" @click.stop="removeBookHandle(book, index)">-</div>
@@ -25,16 +26,11 @@
 // If not already defined...
 import { mapActions } from 'vuex'
 const { remote } = require('electron')
-const path = require('path')
-
-let cachePath = path.dirname(remote.app.getPath('cache'))
 
 const { dialog } = remote
 const fs = require('fs')
 const jschardet = require('jschardet')
 const iconv = require('iconv-lite')
-
-const Nedb = require('nedb')
 
 let chaperRegStr = '第[0-9一二三四五六七八九十百千万]+'
 let allUnits = '[章卷节回幕计]'
@@ -55,16 +51,11 @@ export default {
       removeBook: 'removeBook',
       addBook: 'addBook'
     }),
-    dbInit () {
-      this.booksdb = new Nedb({
-        filename: cachePath + '/hiddenReader/books.db',
-        autoload: true,
-        onload: (err) => {
-          if (err) {
-            alert('数据库加载出错!')
-          } else {
-            this.getBookList()
-          }
+    bookClickHandle ({ _id }) {
+      this.$router.push({
+        path: '/book',
+        query: {
+          bookId: _id
         }
       })
     },
@@ -213,6 +204,13 @@ export default {
         })
 
         return chapers
+      } else {
+        return [{
+          index: 0,
+          title: title,
+          content: content,
+          length: content.length
+        }]
       }
     }
   }

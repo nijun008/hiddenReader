@@ -16,8 +16,15 @@
   padding: 0;
   box-sizing: border-box;
 }
+ul, ol {
+  list-style: none;
+}
 html, body {
+  height: 100%;
   color: #2c3e50;
+}
+#app {
+  height: 100%;
 }
 .button {
   font-size: 14px;
