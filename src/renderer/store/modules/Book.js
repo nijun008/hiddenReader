@@ -15,8 +15,9 @@ const mutations = {
   REMOVE_BOOK (state, target) {
     state.booksList = state.booksList.filter(book => book._id !== target._id)
   },
-  UPDATE_BOOK (state, bookIndex, book) {
-    Vue.$set(state.booksList, bookIndex, book)
+  UPDATE_BOOK (state, book) {
+    let index = state.booksList.find(item => item._id === book._id)
+    Vue.set(state.booksList, index, book)
   }
 }
 
@@ -46,8 +47,15 @@ const actions = {
       })
     })
   },
-  updateBook ({ commit }, bookIndex, book) {
-    commit('UPDATE_BOOK', bookIndex, book)
+  updateBook ({ commit }, book) {
+    return new Promise((resolve, reject) => {
+      bookdb.update({ _id: book._id }, book).then((removeNum) => {
+        commit('UPDATE_BOOK', book)
+        resolve(removeNum)
+      }).catch(err => {
+        reject(err)
+      })
+    })
   }
 }
 

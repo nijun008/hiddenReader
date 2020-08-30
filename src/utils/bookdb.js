@@ -41,6 +41,19 @@ class Db {
     })
   }
 
+  update (query, newDoc) {
+    return new Promise((resolve, reject) => {
+      this.db.update(query, newDoc, function (err, result) {
+        if (err) {
+          console.log('更新数据出错！', err)
+          reject(err)
+        } else {
+          resolve(result)
+        }
+      })
+    })
+  }
+
   remove (query) {
     return new Promise((resolve, reject) => {
       this.db.remove(query, {}, (err, numRemoved) => {

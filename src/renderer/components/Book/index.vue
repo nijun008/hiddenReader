@@ -6,10 +6,13 @@
         <div class="btn-icon" :class="{ 'left': catShow }">></div>
       </div>
       <ul>
-        <li class="cat-item current-cat">目录一</li>
-        <li class="cat-item">目录二 lhkjhjkhlkhiulklklkd寄快递；诶都了看家点击后第六空间</li>
-        <li class="cat-item">目录三</li>
-        <li class="cat-item">目录四</li>
+        <li v-for="(item, index) in book.chapers" 
+          :key="'chaper' + index" 
+          class="cat-item"
+          :class="{ 'current-cat': current === item }"
+          @click="switchChaper(item, index)">
+          {{ item.title }}
+          </li>
       </ul>
     </div>
 
@@ -20,22 +23,22 @@
         </li>
       </ul>
       <div class="set-btn" @click="toggleBar('setShow')">
-        <div class="btn-icon" :class="{ 'left': setShow }">{{ '<' }}</div>
+        <div class="btn-icon" :class="{ 'left': setShow }"><</div>
       </div>
     </div>
 
-    <div class="content" @click="toggleAll" :style="setStyle">
-      这是内容这是内容这是内容这是内容这是内容这是内容这是内容这是内容这是内容这是内容这是内容这是内容这是内容这是内容这是内容
-      这是内容这是内容这是内容这是内容这是内容这是内容这是内容这是内容这是内容这是内容这是内容这是内容这是内容这是内容这是内容这是内容
-      这是内容这是内容这是内容这是内容这是内容这是内容这是内容这是内容这是内容这是内容这是内容这是内容这是内容这是内容这是内容
-      这是内容这是内容这是内容这是内容这是内容这是内容这是内容这是内容这是内容这是内容这是内容这是内容这是内容这是内容这是内容这是内容这是内容
-      这是内容这是内容这是内容这是内容这是内容这是内容这是内容这是内容这是内容这是内容这是内容
+    <div class="content-box" @click="toggleAll" :style="setStyle">
+      <div class="content">
+        <pre>{{ current.content ||'' }}</pre>
+      </div>
+      <div class="content-footer">{{ current.title }}</div>
     </div>
   </div>
 </template>
 
 <script>
 import bookdb from '@/../utils/bookdb'
+import { mapActions } from 'vuex'
 export default {
   data () {
     return {
@@ -43,6 +46,7 @@ export default {
       setShow: false,
       bookId: '',
       book: {},
+      current: {},
       setStyle: {
         color: '#333',
         backgroundColor: '#fff',
@@ -56,6 +60,19 @@ export default {
     this.loadBook()
   },
   methods: {
+    ...mapActions({
+      updateBook: 'updateBook'
+    }),
+    switchChaper (item, index) {
+      this.current = item
+
+      this.book.currentChaper = index
+      this.book.progress = 0
+      this.updateProgress(this.book)
+    },
+    updateProgress (book) {
+      this.updateBook(book)
+    },
     toggleAll () {
       this.setShow = false
       this.catShow = false
@@ -72,6 +89,7 @@ export default {
         if (res && res.length > 0) {
           this.book = res[0]
           console.log(this.book)
+          this.current = this.book.chapers[this.book.currentChaper]
           return
         }
         this.loadFailHandle()
@@ -88,6 +106,9 @@ export default {
 </script>
 
 <style scoped>
+div {
+  box-sizing: border-box;
+}
 .book-page {
   height: 100%;
   position: relative;
@@ -101,6 +122,11 @@ export default {
   width: 300px;
   background-color: #eee;
   transition: left .4s;
+  /* overflow-y: auto; */
+}
+.cat-bar ul {
+  height: 100%;
+  overflow-y: auto;
 }
 .set-bar {
   font-size: 14px;
@@ -168,8 +194,26 @@ export default {
   border: none;
   outline: none;
 }
+.content-box {
+  width: 100%;
+  height: 100%;
+}
 .content {
   width: 100%;
   height: 100%;
+  padding-bottom: 24px;
+  overflow-y: auto;
+}
+.content pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+.content-footer {
+  text-align: center;
+  position: absolute;
+  bottom: 0;
+  line-height: 24px;
+  font-size: 13px;
+  text-align: center;
 }
 </style>
